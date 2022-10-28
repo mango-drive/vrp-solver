@@ -1,0 +1,10 @@
+name,tw_open,tw_close,address,demand,lat,lng
+Jane,10:00,13:00,"34 Rue Richer, 75009 Paris",2,48.8742118,2.3446064
+Marie,10:00,13:00,"39 Av. Duquesne, 75007 Paris",2,48.8513809,2.3110222
+Pierre,10:00,13:00,"140 Rue du Faubourg Poissonnière, 75010 Paris",2,48.8809206,2.3500288
+Olaf,10:00,13:00,"6 Av. de la Motte-Picquet, 75007 Paris",2,48.8571499,2.3093104
+Jack,10:00,13:00,"37 Rue de la Bûcherie, 75005 Paris",2,48.8525631,2.3471304
+Henry,10:00,13:00,"Pl. de l'Opéra, 75009 Paris",2,48.8706366,2.3320857
+Tristan,10:00,14:00,"104 Av. d'Italie, 75013 Paris",2,48.82488070000000,2.3573333
+Caroline,9:00,16:00,"56 Rue Boissonade, 75014 Paris",2,48.8382763,2.3316999
+Isabelle,9:00,16:00,"47 Rue de Babylone, 75007 Paris",2,48.8516211,2.3182931

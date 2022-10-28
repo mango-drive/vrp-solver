@@ -1,0 +1,16 @@
+SQUARE
+
+VEHICLE
+NUMBER     CAPACITY   SPEED
+  6         200       1
+
+CUSTOMER
+CUST NO.  XCOORD.   YCOORD.    DEMAND   READY TIME  DUE DATE   SERVICE   TIME
+ 
+    0      40         40          0          0         24          0   
+    1      20         60         10          0          1          0   
+    2      60         60         10                  870         90   
+    3      42         66         10         65        146         90   
+    4      42         68         10        727        782         90   
+    5      42         65         10         15         67         90   
+    6      40         69         20        621        702         90
