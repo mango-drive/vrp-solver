@@ -5,4 +5,4 @@ env/
 .ipynb_checkpoints/
 __pycache__/
 results/
-.DS_Store
+data/.DS_Store

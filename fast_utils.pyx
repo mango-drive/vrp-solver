@@ -1,5 +1,5 @@
 from random import randint
-from debug_utils import log, timeit
+from debug_utils import timeit
 
 SPEED = 10
 DEPOT = 0
@@ -35,7 +35,6 @@ def get_neighbors2(M, xy):
     return neighs
 
 @timeit(True)
-@log(False)
 def crossover_ero3(p1, p2, algo=None):
 
     def _in(C, v):

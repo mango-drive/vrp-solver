@@ -7,7 +7,8 @@ from typing import List
 
 import pyqtgraph as pg
 
-from debug_utils import log, save, timeit, profile
+from debug_utils import save, timeit, profile
+
 from fast_utils import (crossover_ero3, evaluate_cGA3, get_neighbors2, decode,
                         sample)
 from table import tabulate
@@ -140,7 +141,6 @@ def constraints_satisfied(node, V, tp, tpp, T, q, Q):
 
 
 @timeit(True)
-@log(False)
 def mutate(C):
     def swap(C, m, n):
         t = C[m]
