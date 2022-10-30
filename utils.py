@@ -186,3 +186,14 @@ def plot_path(plot, xys, path, color='b'):
 def plot_problem_solution(plot, path, algo):
     plot_path(plot, algo.C, path)
     plot_customers(plot, algo.C)
+
+def plot_fitness_over_generations(evolution):
+    x = []
+    y = []
+    for generation in evolution:
+        x.append(generation['generation'])
+        y.append(generation['best_fitness'])
+
+    plt.plot(x, y)
+    plt.show()
+

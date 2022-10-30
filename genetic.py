@@ -10,7 +10,7 @@ from debug_utils import save, timeit, profile
 
 from fast_utils import (crossover_ero3, evaluate_cGA3, get_neighbors2, decode,
                         sample)
-from utils import euclidean, find_min_index, load_csv, load_solomun_problem, plot_customers, plot_problem_solution
+from utils import euclidean, find_min_index, load_csv, load_solomun_problem, plot_customers, plot_fitness_over_generations, plot_problem_solution
 from vrp import Customer
 
 import time
@@ -18,8 +18,8 @@ import time
 SPEED = 1
 WIDTH = 15
 TIME_LIMIT = 1000
-ITERATIONS = 300
-N_EQUAL_BEST = 50
+ITERATIONS = 100
+N_EQUAL_BEST = 100
 
 DEPOT = 0
 LATE_PENALTY = 10
@@ -297,10 +297,13 @@ def init(file):
 
 def solve(file):
     P, algo = init(file)
-    best, _ = evolution(P, algo=algo)
+    best, results = evolution(P, algo=algo)
     print(f"\n\n\nBEST SOLUTION: \n {best}")
     print("\n PERFORMANCE")
     print(algo.performance)
+
+    plot_fitness_over_generations(results)
+    
     return decode(best, algo=algo), algo
 
 
