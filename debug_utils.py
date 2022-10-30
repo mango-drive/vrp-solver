@@ -39,12 +39,12 @@ def save(should_save=False):
                     algo = kwargs["algo"]
                     if algo:
                         result_file = os.path.join(algo.results_dir, fname+'.csv')
-                        reader = csv.DictReader(result_file)
-                        num_rows = len(list(reader))
                         ret, results = func(*args, **kwargs)
                         fieldnames = results[0].keys()
                         writer = csv.DictWriter(open(result_file, 'a'), fieldnames)
-                        if not num_rows: writer.writeheader()
+                        num_lines = len(open(result_file).readlines())
+                        if not num_lines: 
+                            writer.writeheader()
                         writer.writerows(results)
                         return ret, results
             else:
