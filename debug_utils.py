@@ -1,3 +1,4 @@
+import os
 import cProfile
 import time
 from pstats import SortKey
@@ -5,9 +6,8 @@ import pstats
 import io
 import matplotlib.pyplot as plt
 import inspect
-from typing import List
+import csv
 
-from requests import head
 
 LOG_METHODS = "log", "init_population_2d", "init_population_1d"
 
@@ -29,24 +29,25 @@ def update_plot(plot):
         return wrapper
     return decorator
 
-
-def log(should_print=False):
-    def decorated_log(func):
-        def log_wrapper(*args, **kwargs):
+def save(should_save=False):
+    def decorated_save(func):
+        def save_wrapper(*args, **kwargs):
             fname = func.__name__
-            if should_print:
-                print("\n\n", "-"*40)
-                print(fname.upper(), "\n")
+            if should_save:
                 algo = None
-                if "algo" in kwargs.keys():
+                if 'algo' in kwargs.keys():
                     algo = kwargs["algo"]
-                if algo:
-                    algo.should_print = should_print
-                return func(*args, **kwargs)
+                    if algo:
+                        result_file = os.path.join(algo.results_dir, fname+'.csv')
+                        ret, results = func(*args, **kwargs)
+                        fieldnames = results[0].keys()
+                        writer = csv.DictWriter(open(result_file, 'a'), fieldnames)
+                        writer.writerows(results)
+                        return ret, results
             else:
                 return func(*args, **kwargs)
-        return log_wrapper
-    return decorated_log
+        return save_wrapper
+    return decorated_save
 
 
 def timeit(should_time=False):
@@ -85,7 +86,7 @@ def profile(func):
         retval = func(*args, **kwargs)
         pr.disable()
         s = io.StringIO()
-        sortby = SortKey.CUMULATIVE  # 'cumulative'
+        sortby = SortKey.CUMULATIVE  
         ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
         ps.print_stats()
         print(s.getvalue())

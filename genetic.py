@@ -1,4 +1,4 @@
-
+import os
 import random
 from dataclasses import dataclass
 from math import inf
@@ -7,7 +7,7 @@ from typing import List
 
 import pyqtgraph as pg
 
-from debug_utils import log, timeit, profile
+from debug_utils import log, save, timeit, profile
 from fast_utils import (crossover_ero3, evaluate_cGA3, get_neighbors2, decode,
                         sample)
 from table import tabulate
@@ -26,6 +26,8 @@ DEPOT = 0
 LATE_PENALTY = 10
 DEP_UNREACH_PENALTY = 10
 CAP_EXCEEDED_PENALTY = 10
+
+RESULTS_DIR = "results/"
 
 
 class Chromosome:
@@ -78,9 +80,9 @@ class Algo:
     T: int
     Q: int
     conditions = Conditions()
-    should_print = False
     parameters = {}
     performance = {}
+    results_dir = ''
 
     def print(self, *args, **kwargs):
         if self.should_print:
@@ -117,7 +119,6 @@ def init_population_1d(pop_size, cust_locs, start_pop=None, stop_perc=0.25):
 
 
 @timeit(True)
-@log(False)
 def init_population_2d(N, C, *args):
     pop_2d = []
     for _ in range(N):
@@ -126,7 +127,6 @@ def init_population_2d(N, C, *args):
 
 
 @timeit(True)
-@log(False)
 def constraints_satisfied(node, V, tp, tpp, T, q, Q):
     if node in V:
         return (False, 'visited')
@@ -176,22 +176,20 @@ def mutate(C):
 
 
 @timeit(True)
-@log(False)
+@save(True)
 def evolve_cGA(population, algo=None, decoded_memo=None):
-    table = []
+    results = []
     aux_pop = [[0 for _ in range(WIDTH)] for _ in range(WIDTH)]
 
     Es = [[None for _ in range(WIDTH)] for _ in range(WIDTH)]
 
     for x in range(WIDTH):
         for y in range(WIDTH):
-            row = []
+            row_dict = {}
             n_list = get_neighbors2(population, (x, y))
-            row.append(n_list)
 
             n_Es = [evaluate_cGA3(decode(X, algo=algo, decoded_memo=decoded_memo), memo=Es, xy=(x, y), algo=algo)
                     for X in n_list]
-            row.append([n_Es])
 
             # binary tournament
             min_i = 0
@@ -204,10 +202,8 @@ def evolve_cGA(population, algo=None, decoded_memo=None):
 
             # local select
             p2 = population[x][y]
-            row.append([p1, p2])
             # recombination
             aux = crossover_ero3(p1.as_list(), p2.as_list(), algo=algo)
-            row.append(aux)
             # mutation
             aux = Chromosome(mutate(aux))
 
@@ -220,13 +216,18 @@ def evolve_cGA(population, algo=None, decoded_memo=None):
             else:
                 aux_pop[x][y] = p2
 
-            table.append(row)
+            row_dict['neighs'] = n_list
+            row_dict['neighs_fitness'] = n_Es
+            row_dict['parents'] = [p1, p2]
+            row_dict['aux'] = aux
+
+            results.append(row_dict)
 
     population = aux_pop
 
-    algo.print(tabulate(table, headers=["n_list", "Es", "parents", "aux"]))
 
-    return population, Es
+    ret = {'population': population, 'fitness_matrix': Es}
+    return ret, results
 
 
 def terminating(conditions: Conditions):
@@ -241,7 +242,6 @@ def terminating(conditions: Conditions):
         return True
 
 
-@profile
 def evolution(population, algo: Algo = None):
 
     algo.iterations = 0
@@ -250,8 +250,12 @@ def evolution(population, algo: Algo = None):
             print(f"Generation: ", algo.conditions.iterations)
 
         decoded_memo = {"first": None}
-        population, Es = evolve_cGA(
+        ret, _ = evolve_cGA(
             population, algo=algo, decoded_memo=decoded_memo)
+
+        population = ret['population']
+        Es = ret['fitness_matrix']
+
         algo.conditions.time_elapsed = time.time() - algo.conditions.start_time
         algo.conditions.iterations += 1
 
@@ -288,6 +292,9 @@ def init(file):
     algo.parameters['m'] = 100
 
     algo.conditions.start_time = time.time()
+    algo.results_dir = os.path.join(RESULTS_DIR, str(algo.conditions.start_time))
+    
+    os.mkdir(algo.results_dir)
 
     return P, algo
 
