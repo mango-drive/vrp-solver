@@ -1,7 +1,6 @@
 import os
 import random
 from dataclasses import dataclass
-from math import inf
 from random import randint
 from typing import List
 
@@ -11,8 +10,7 @@ from debug_utils import save, timeit, profile
 
 from fast_utils import (crossover_ero3, evaluate_cGA3, get_neighbors2, decode,
                         sample)
-from table import tabulate
-from utils import euclidean, load_csv, load_solomun_problem, plot_customers, plot_problem_solution
+from utils import euclidean, find_min_index, load_csv, load_solomun_problem, plot_customers, plot_problem_solution
 from vrp import Customer
 
 import time
@@ -63,7 +61,7 @@ class Chromosome:
 class Conditions:
     start_time: float = 0
     time_elapsed = 0
-    iterations = 0
+    generations = 0
     n_equal_exp = 0
     best = None
 
@@ -234,46 +232,44 @@ def terminating(conditions: Conditions):
     if conditions.time_elapsed > TIME_LIMIT:
         print("\n\nTIME LIMIT EXCEEDED")
         return True
-    if conditions.iterations > ITERATIONS:
+    if conditions.generations > ITERATIONS:
         print("\n\nITERATION LIMIT EXCEEDED")
         return True
     if conditions.n_equal_exp > N_EQUAL_BEST:
         print("\n\nN_EQUAL_BEST LIMIT EXCEEDED")
         return True
 
-
+@save(True)
 def evolution(population, algo: Algo = None):
-
-    algo.iterations = 0
+    algo.generations = 0
+    results = []
     while not terminating(algo.conditions):
-        if algo.conditions.iterations % 100 == 0:
-            print(f"Generation: ", algo.conditions.iterations)
+        if algo.conditions.generations % 100 == 0:
+            print(f"Generation: ", algo.conditions.generations)
 
         decoded_memo = {"first": None}
         ret, _ = evolve_cGA(
             population, algo=algo, decoded_memo=decoded_memo)
 
         population = ret['population']
-        Es = ret['fitness_matrix']
+        fitness_matrix = ret['fitness_matrix']
 
         algo.conditions.time_elapsed = time.time() - algo.conditions.start_time
-        algo.conditions.iterations += 1
+        algo.conditions.generations += 1
 
         # find the best solution
-        min = inf
-        min_xy = None
-        for x in range(WIDTH):
-            for y in range(WIDTH):
-                if Es[x][y] < min:
-                    min = Es[x][y]
-                    min_xy = (x, y)
-        x, y = min_xy
-        best_C = population[x][y]
-        best_E = Es[x][y]
+        x, y = find_min_index(fitness_matrix, WIDTH)
+        best_indiv = population[x][y]
+        best_fitness = fitness_matrix[x][y]
 
-        algo.conditions.set_best(best_E)
+        algo.conditions.set_best(best_fitness)
 
-    return best_C
+        row_dict = {}
+        row_dict['generation'] = algo.conditions.generations
+        row_dict['best_fitness'] = best_fitness
+        results.append(row_dict)
+
+    return best_indiv, results
 
 
 def init(file):
@@ -301,7 +297,7 @@ def init(file):
 
 def solve(file):
     P, algo = init(file)
-    best = evolution(P, algo=algo)
+    best, _ = evolution(P, algo=algo)
     print(f"\n\n\nBEST SOLUTION: \n {best}")
     print("\n PERFORMANCE")
     print(algo.performance)

@@ -10,7 +10,19 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pyqtgraph as pg
 
+from math import inf
+
 from vrp import Customer
+
+def find_min_index(mat, WIDTH):
+    min = inf
+    min_xy = None
+    for x in range(WIDTH):
+        for y in range(WIDTH):
+            if mat[x][y] < min:
+                min = mat[x][y]
+                min_xy = (x, y)
+    return min_xy
 
 
 def union(A, B):
